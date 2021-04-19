@@ -50,7 +50,7 @@ push dx
 		mov bh, al
 		l_innerRectLoop:
 			; choose color
-			mov al, 0 ; white
+			mov al, 255 ; white
 
 			; set coordinate of pixel
 			mov cx, [bp + 10] ; x coordinate, forth parameter
