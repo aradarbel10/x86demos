@@ -10,33 +10,44 @@ piece_x db 0
 piece_y db 0
 piece_type db 0 ; I=0,O,J,L,S,T,Z
 
-piece_shape dw 0000000011110000b ; I
-			dw 0000011001100000b ; O
-			dw 0000111000100000b ; J
-			dw 0000111010000000b ; K
-			dw 0000011011000000b ; S
-			dw 0000111001000000b ; T
-			dw 0000110001100000b ; Z
+piece_shape	dw 0000000011110000b ; I
+				dw 0000011001100000b ; O
+				dw 0000000011111111b;0000111000100000b ; J
+				dw 1111111100000000b;0000111010000000b ; L
+				dw 0000011011000000b ; S
+				dw 0000111001000000b ; T
+				dw 0000110001100000b ; Z
 
-piece_color	db 1011b, 1110b, 0001b, 0110b, 0010b, 0101b, 0100b
+piece_color	dw 1011b, 1110b, 0001b, 0110b, 0010b, 0101b, 0100b
 ; I, light blue
 ; O, yellow
 ; J, blue
-; K, orange
+; L, orange
 ; S, green
 ; T, magenta
 ; Z, red
 
-
 .code
 
-mov ax,@data
+mov ax, @data
 mov ds, ax
 
-; here your program starts
+;here your program starts
 
-; push arguments and call
-push 5 ; color red
+;push arguments and call
+;push 5 ; color red
+;push 1 ; y coordinate
+;push 0 ; x coordinate
+;call _drawTile
+;add sp, 6
+
+;push 5 ; color red
+;push 2 ; y coordinate
+;push 2 ; x coordinate
+;call _drawTile
+;add sp, 6
+
+push 3 ; piece type (should be L)
 push 0 ; y coordinate
 push 0 ; x coordinate
 call _drawPiece
@@ -62,8 +73,9 @@ push dx
 ; contents of the subroutine go here
 	mov ah, 2
 	mov dx, [bp + 6] ; y position, second parameter
-	shl dh, 8
+	shl dx, 8
 	mov bx, [bp + 4] ; x position, first parameter
+	shl bx, 1
 	mov dl, bl
 	int 10h ; set position of cursor
 	
@@ -71,7 +83,7 @@ push dx
 	mov al, 32 ; character to draw (space)
 	mov bl, [bp + 8] ; tile color, third parameter
 	shl bl, 4
-	mov cx, 1 ; times to repeat (twice, to make a square)
+	mov cx, 2 ; times to repeat (twice, to make a square)
 	int 10h ; draw tile at location of cursor
 
 ; subroutine closing convension
@@ -95,8 +107,8 @@ push cx
 push dx
 ; contents of the subroutine go here
 	mov bx, [bp + 8] ; type of piece, third parameter
-	mov al, piece_color[bx * 2]
-	push ax ; push piece color once onto the stack
+	mov ax, piece_color[bx * 2]
+	push 0101b;ax ; push piece color once onto the stack
 	mov ax, piece_shape[bx * 2] ; store piece shape in ax
 
 	mov cl, 4 ; cl = y
@@ -123,6 +135,8 @@ push dx
 		jnz l_drawPiece_innerLoop
 	dec cl
 	jnz l_drawPiece_outerLoop
+
+	add sp, 2
 
 ; subroutine closing convension
 pop dx ; pop back used registers in reverse order
